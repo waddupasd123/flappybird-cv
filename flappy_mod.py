@@ -20,12 +20,12 @@ PLAYERS_LIST = (
         'assets/sprites/redbird-midflap.png',
         'assets/sprites/redbird-downflap.png',
     ),
-    # blue bird
-    (
-        'assets/sprites/bluebird-upflap.png',
-        'assets/sprites/bluebird-midflap.png',
-        'assets/sprites/bluebird-downflap.png',
-    ),
+    # # blue bird
+    # (
+    #     'assets/sprites/bluebird-upflap.png',
+    #     'assets/sprites/bluebird-midflap.png',
+    #     'assets/sprites/bluebird-downflap.png',
+    # ),
     # yellow bird
     (
         'assets/sprites/yellowbird-upflap.png',
@@ -305,7 +305,8 @@ def mainGame(gameInfo):
     if gameInfo['playerRot'] <= gameInfo['playerRotThr']:
         visibleRot = gameInfo['playerRot']
     
-    playerSurface = pygame.transform.rotate(IMAGES['player'][gameInfo['playerIndex']], visibleRot)
+    #playerSurface = pygame.transform.rotate(IMAGES['player'][gameInfo['playerIndex']], visibleRot)
+    playerSurface = pygame.transform.rotate(IMAGES['player'][gameInfo['playerIndex']], 0)
     SCREEN.blit(playerSurface, (gameInfo['playerx'], gameInfo['playery']))
 
     pygame.display.update()

@@ -3,7 +3,6 @@ import numpy as np
 from windowcapture import WindowCapture
 import flappy_mod as Flappy
 from time import time
-#import flappy
 
 """ WindowCapture.list_window_names()
 exit() """
@@ -26,28 +25,30 @@ def main():
             gameInfo = Flappy.mainGameSetup(movementInfo)
 
 
-        # get an updated image of the game
-        screenshot = wincap.get_screenshot()
-        #frame = cv.cvtColor(screenshot, cv.COLOR_RGB2GRAY)
+        # get a frane of the game
+        frame = wincap.get_screenshot()
+        #frame = cv.cvtColor(frame, cv.COLOR_RGB2GRAY)
 
-        # Game lags with more than 2 objects to detect
+        # Game lags really badly with more than 3 objects to detect
         # Will sometimes not detect because score will cover pipe
         # Hide score?
 
         # Up pipes
         pipe1_img = cv.imread('refer/pipe_1.png', cv.IMREAD_ANYCOLOR)
-        upPipes = detect(pipe1_img, screenshot, 0.8, (0, 255, 0))
+        upPipes = detect(pipe1_img, frame, 0.8, (0, 255, 0))
 
         # Down pipes
         pipe3_img = cv.imread('refer/pipe_3.png', cv.IMREAD_ANYCOLOR)
-        downPipes = detect(pipe3_img, screenshot, 0.8, (255, 0, 0))
+        downPipes = detect(pipe3_img, frame, 0.8, (255, 0, 0))
 
         # Bird
-        bird_img = cv.imread('refer\yellowbird-midflap.png', cv.IMREAD_ANYCOLOR)
-        birdLoc = detect(bird_img, screenshot,  0.6, (0, 0, 255))
+        bird1_img = cv.imread('refer/test_2.png', cv.IMREAD_ANYCOLOR)
+        # Doesn't work consistently
+        # Using features is also inconsistent and slow
+        # Removed rotation and blue bird
+        birdLoc = detect(bird1_img, frame, 0.55, (0, 0, 255))
 
-
-        cv.imshow('result.jpg', screenshot)
+        cv.imshow('result.jpg', frame)
 
         # debug the loop rate
         #print('FPS {}'.format(1 / (time() - loop_time)))
@@ -59,8 +60,8 @@ def main():
             break
 
 
-def detect(image, screenshot, threshold, colour):
-    result = cv.matchTemplate(screenshot, image, cv.TM_CCOEFF_NORMED)
+def detect(image, frame, threshold, colour):
+    result = cv.matchTemplate(frame, image, cv.TM_CCOEFF_NORMED)
 
     locations = np.where(result >= threshold)
     # Convert to (x,y) positions
@@ -88,7 +89,7 @@ def detect(image, screenshot, threshold, colour):
             top_left = (x, y)
             bottom_right = (x + w, y + h)
 
-            cv.rectangle(screenshot, top_left, bottom_right, colour, line_type)
+            cv.rectangle(frame, top_left, bottom_right, colour, line_type)
     
     return rectangles
 
