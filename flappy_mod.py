@@ -216,32 +216,37 @@ def mainGameSetup(movementInfo):
         'playerFlapped': playerFlapped,
     }
 
-def mainGame(gameInfo):
-    #while True:
+def action(gameInfo, action):
+    if (action):
+        if gameInfo['playery'] > -2 * IMAGES['player'][0].get_height():
+            gameInfo['playerVelY'] = gameInfo['playerFlapAcc']
+            gameInfo['playerFlapped'] = True
+            SOUNDS['wing'].play()
+    # Comment out later
     for event in pygame.event.get():
         if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
             pygame.quit()
-            sys.exit()
+            return False
+            #sys.exit()
         if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
             if gameInfo['playery'] > -2 * IMAGES['player'][0].get_height():
                 gameInfo['playerVelY'] = gameInfo['playerFlapAcc']
                 gameInfo['playerFlapped'] = True
                 SOUNDS['wing'].play()
+    
+    return True
+
+def quit():
+    pygame.quit()
+
+def mainGame(gameInfo):
+    #action(gameInfo)
 
     # check for crash here
     crashTest = checkCrash({'x': gameInfo['playerx'], 'y': gameInfo['playery'], 'index': gameInfo['playerIndex']},
                             gameInfo['upperPipes'], gameInfo['lowerPipes'])
     if crashTest[0]:
-        return {
-            'y': gameInfo['playery'],
-            'groundCrash': crashTest[1],
-            'basex': gameInfo['basex'],
-            'upperPipes': gameInfo['upperPipes'],
-            'lowerPipes': gameInfo['lowerPipes'],
-            'score': gameInfo['score'],
-            'playerVelY': gameInfo['playerVelY'],
-            'playerRot': gameInfo['playerRot']
-        }
+        return gameInfo, True
 
     # check for score
     playerMidPos = gameInfo['playerx'] + IMAGES['player'][0].get_width() / 2
@@ -311,6 +316,8 @@ def mainGame(gameInfo):
 
     pygame.display.update()
     FPSCLOCK.tick(FPS)
+
+    return gameInfo, crashTest[0]
 
 
 

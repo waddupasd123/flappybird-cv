@@ -7,26 +7,55 @@ from time import time
 """ WindowCapture.list_window_names()
 exit() """
 
-def main():
-    Flappy.launch()
-    movementInfo = Flappy.initialSetup()
-    gameInfo = Flappy.mainGameSetup(movementInfo)
+class ComputerVision:
 
-    # initialize the WindowCapture class
-    wincap = WindowCapture('Flappy Bird')
-    loop_time = time()
+    def __init__(self) -> None:
+        self.movementInfo = None
+        self.gameInfo = None
+        self.wincap = None
+        self.X = 0
+        self.Y = 0
+        self.V = 0
+        self.Y1 = 0
 
-    while True:
+    def getX(self):
+        return self.X
+
+    def getY(self):
+        return self.Y
+    
+    def getV(self):
+        return self.V
+
+    def getY1(self):
+        return self.Y1
+
+    def setup(self):
+        Flappy.launch()
+        self.movementInfo = Flappy.initialSetup()
+        self.gameInfo = Flappy.mainGameSetup(self.movementInfo)
+
+        # initialize the WindowCapture class
+        self.wincap = WindowCapture('Flappy Bird')
+
+    def action(self, action):
+        return Flappy.action(self.gameInfo, action)
+
+    def getScore(self):
+        return self.gameInfo['score']
+
+    def nextFrame(self):
         # Go to next frame
-        crash = Flappy.mainGame(gameInfo)
+        #Flappy.action(self.gameInfo)
+        loop_time = time()
+        self.gameInfo, crash = Flappy.mainGame(self.gameInfo)
         if (crash):
-            Flappy.launch()
-            movementInfo = Flappy.initialSetup()
-            gameInfo = Flappy.mainGameSetup(movementInfo)
+            self.setup()
+            return False
 
 
         # get a frane of the game
-        frame = wincap.get_screenshot()
+        frame = self.wincap.get_screenshot()
         #frame = cv.cvtColor(frame, cv.COLOR_RGB2GRAY)
 
         # Game lags really badly with more than 3 objects to detect
@@ -35,65 +64,117 @@ def main():
 
         # Up pipes
         pipe1_img = cv.imread('refer/pipe_1.png', cv.IMREAD_ANYCOLOR)
-        upPipes = detect(pipe1_img, frame, 0.8, (0, 255, 0))
+        upPipes = self.detect(pipe1_img, frame, 0.8, (0, 255, 0))
 
-        # Down pipes
+        # Down pipes - not really needed
         pipe3_img = cv.imread('refer/pipe_3.png', cv.IMREAD_ANYCOLOR)
-        downPipes = detect(pipe3_img, frame, 0.8, (255, 0, 0))
+        downPipes = self.detect(pipe3_img, frame, 0.8, (255, 0, 0))
 
         # Bird
-        bird1_img = cv.imread('refer/test_2.png', cv.IMREAD_ANYCOLOR)
         # Doesn't work consistently
         # Using features is also inconsistent and slow
         # Removed rotation and blue bird
-        birdLoc = detect(bird1_img, frame, 0.55, (0, 0, 255))
+        bird1_img = cv.imread('refer/cropped_bird.png', cv.IMREAD_ANYCOLOR)
+        bird2_img = cv.imread('refer/bird_1.png', cv.IMREAD_ANYCOLOR)
+        birdLoc = self.detectBird(bird1_img, frame, 0.55, (0, 0, 255), bird2_img)
+
+        if birdLoc and upPipes:
+            if upPipes[0][0] < birdLoc[0][0]:
+                self.X = upPipes[0][1] - birdLoc[0][0]
+                self.Y = birdLoc[0][0] - upPipes[0][1]
+                self.V = (upPipes[0][1] - birdLoc[0][0]) / (time() - loop_time)
+            else:
+                self.X = upPipes[0][0] - birdLoc[0][0]
+                self.Y = birdLoc[0][0] - upPipes[0][0]
+                self.V = (upPipes[0][0] - birdLoc[0][0]) / (time() - loop_time)
+        
+        if upPipes and len(upPipes[0]) > 2:
+            self.Y1 = upPipes[0][1] - upPipes[0][0]
 
         cv.imshow('result.jpg', frame)
 
         # debug the loop rate
         #print('FPS {}'.format(1 / (time() - loop_time)))
-        #loop_time = time()
+        loop_time = time()
+
+        return True
 
 
-        if cv.waitKey(1) == ord('q'):
-            cv.destroyAllWindows()
-            break
+    def detect(self, image, frame, threshold, colour):
+        result = cv.matchTemplate(frame, image, cv.TM_CCOEFF_NORMED)
+
+        locations = np.where(result >= threshold)
+        # Convert to (x,y) positions
+        locations = list(zip(*locations[::-1]))
+        #print(locations)
+
+        # Create list of [x, y, w, h] rectangles
+        width = image.shape[1]
+        height = image.shape[0]
+
+        rectangles = []
+        for loc in locations:
+            rect = [int(loc[0]), int(loc[1]), width, height]
+            rectangles.append(rect)
+            rectangles.append(rect)
+
+        rectangles, weights = cv.groupRectangles(rectangles, 1, 0.5)
+        rectangles = sorted(rectangles, key=lambda x: x[0])
+        #print(rectangles)
+
+        if len(rectangles):
+            line_type = cv.LINE_4
+
+            for (x, y, w, h) in rectangles:
+                top_left = (x, y)
+                bottom_right = (x + w, y + h)
+
+                cv.rectangle(frame, top_left, bottom_right, colour, line_type)
+        
+        return rectangles
+
+    def detectBird(self, image, frame, threshold, colour, reference):
+        result = cv.matchTemplate(frame, image, cv.TM_CCOEFF_NORMED)
+
+        locations = np.where(result >= threshold)
+        # Convert to (x,y) positions
+        locations = list(zip(*locations[::-1]))
+        #print(locations)
+
+        # Create list of [x, y, w, h] rectangles
+        width = reference.shape[1]
+        height = reference.shape[0]
+
+        rectangles = []
+        for loc in locations:
+            rect = [int(loc[0]) - 10, int(loc[1]) - 2, width, height]
+            rectangles.append(rect)
+            rectangles.append(rect)
+
+        rectangles, weights = cv.groupRectangles(rectangles, 1, 0.5)
+        rectangles = sorted(rectangles, key=lambda x: x[0])
+        #print(rectangles)
+
+        if len(rectangles):
+            line_type = cv.LINE_4
+
+            for (x, y, w, h) in rectangles:
+                top_left = (x, y)
+                bottom_right = (x + w, y + h)
+
+                cv.rectangle(frame, top_left, bottom_right, colour, line_type)
+        
+        return rectangles
 
 
-def detect(image, frame, threshold, colour):
-    result = cv.matchTemplate(frame, image, cv.TM_CCOEFF_NORMED)
+def main():
+    vision = ComputerVision()
+    vision.setup()
 
-    locations = np.where(result >= threshold)
-    # Convert to (x,y) positions
-    locations = list(zip(*locations[::-1]))
-    #print(locations)
-
-    # Create list of [x, y, w, h] rectangles
-
-    width = image.shape[1]
-    height = image.shape[0]
-
-    rectangles = []
-    for loc in locations:
-        rect = [int(loc[0]), int(loc[1]), width, height]
-        rectangles.append(rect)
-        rectangles.append(rect)
-
-    rectangles, weights = cv.groupRectangles(rectangles, 1, 0.5)
-    #print(rectangles)
-
-    if len(rectangles):
-        line_type = cv.LINE_4
-
-        for (x, y, w, h) in rectangles:
-            top_left = (x, y)
-            bottom_right = (x + w, y + h)
-
-            cv.rectangle(frame, top_left, bottom_right, colour, line_type)
+    while True:
+        # Go to next frame
+        vision.nextFrame()
     
-    return rectangles
-
-
 if __name__ == '__main__':
     main()
 
