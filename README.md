@@ -5,7 +5,7 @@ Train a neural network to play Flappy Bird with computer vision.
 
 Flappy Bird made in python from [here](https://github.com/sourabhv/FlapPyBird) 
 
-Setup (as tested on MacOS)
+Setup 
 ---------------------------
 
 1. Install Python 3.x (recommended) 2.x from [here](https://www.python.org/download/releases/) (Or use your preffered package manager)
@@ -25,6 +25,12 @@ Setup (as tested on MacOS)
 5. In the root directory run
 
    ```bash
-   $ python flappy.py
+   $ python cv.py
+   ```
+
+6. To run training network (q-learning) DOESN't WORK:
+
+   ```bash
+   $ python q_learning.py
    ```
 

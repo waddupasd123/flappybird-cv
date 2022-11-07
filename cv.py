@@ -40,6 +40,9 @@ class ComputerVision:
 
     def action(self, action):
         return Flappy.action(self.gameInfo, action)
+    
+    def keyInput(self):
+        return Flappy.keyInput(self.gameInfo)
 
     def getScore(self):
         return self.gameInfo['score']
@@ -172,6 +175,7 @@ def main():
     vision.setup()
 
     while True:
+        vision.keyInput()
         # Go to next frame
         vision.nextFrame()
     
