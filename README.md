@@ -8,7 +8,7 @@ Flappy Bird made in python from [here](https://github.com/sourabhv/FlapPyBird)
 Setup 
 ---------------------------
 
-1. Install Python 3.x (recommended) 2.x from [here](https://www.python.org/download/releases/) (Or use your preffered package manager)
+1. Install Python 3.x (recommended) from [here](https://www.python.org/download/releases/) (Or use your preffered package manager)
 
 2. _Optional_: Setup a virtual environment from [here](https://pypi.org/project/virtualenv/)
 
@@ -33,4 +33,9 @@ Setup
    ```bash
    $ python q_learning.py
    ```
+Description
+---------------------------
+Uses Open CV (computer vision) to detect positions of bird and pipes. It will then use a q-table to train network.
 
+
+![Bottom pipes](result.jpg)
