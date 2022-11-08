@@ -184,7 +184,8 @@ class AQLearning:
         print(f"Saving training states with {self.episode} episodes to file...")
         with open("data/training_values_resume.json", "w") as f:
             json.dump({'episodes': [i+1 for i in range(self.episode)],
-                        'scores': self.scores}, f)
+                        'scores': self.scores,
+                        'max_scores': self.max_scores}, f)
 
     
     def showPerformance(self):
