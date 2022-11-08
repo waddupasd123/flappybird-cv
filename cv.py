@@ -53,8 +53,9 @@ class ComputerVision:
         #loop_time = time()
         self.gameInfo, crash = Flappy.mainGame(self.gameInfo)
         if (crash):
+            score = self.gameInfo['score']
             self.setup()
-            return False
+            return True, score
 
 
         # get a frane of the game
@@ -71,8 +72,8 @@ class ComputerVision:
 
         # Down pipes - not really needed
         # Comment out to reduce lag
-        pipe3_img = cv.imread('refer/pipe_3.png', cv.IMREAD_ANYCOLOR)
-        downPipes = self.detect(pipe3_img, frame, 0.8, (255, 0, 0))
+        #pipe3_img = cv.imread('refer/pipe_3.png', cv.IMREAD_ANYCOLOR)
+        #downPipes = self.detect(pipe3_img, frame, 0.8, (255, 0, 0))
 
         # Bird
         # Doesn't work consistently
@@ -100,7 +101,7 @@ class ComputerVision:
         #print('FPS {}'.format(1 / (time() - loop_time)))
         #loop_time = time()
 
-        return True
+        return False, self.gameInfo['score']
 
 
     def detect(self, image, frame, threshold, colour):
