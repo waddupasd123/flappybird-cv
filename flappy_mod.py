@@ -222,18 +222,12 @@ def action(gameInfo, action):
             gameInfo['playerVelY'] = gameInfo['playerFlapAcc']
             gameInfo['playerFlapped'] = True
             SOUNDS['wing'].play()
-    # Comment out later
+
     for event in pygame.event.get():
         if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
             pygame.quit()
             return False
-            #sys.exit()
-        if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
-            if gameInfo['playery'] > -2 * IMAGES['player'][0].get_height():
-                gameInfo['playerVelY'] = gameInfo['playerFlapAcc']
-                gameInfo['playerFlapped'] = True
-                SOUNDS['wing'].play()
-    
+
     return True
 
 def keyInput(gameInfo):

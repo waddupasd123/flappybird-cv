@@ -50,7 +50,7 @@ class ComputerVision:
     def nextFrame(self):
         # Go to next frame
         #Flappy.action(self.gameInfo)
-        loop_time = time()
+        #loop_time = time()
         self.gameInfo, crash = Flappy.mainGame(self.gameInfo)
         if (crash):
             self.setup()
@@ -70,6 +70,7 @@ class ComputerVision:
         upPipes = self.detect(pipe1_img, frame, 0.8, (0, 255, 0))
 
         # Down pipes - not really needed
+        # Comment out to reduce lag
         pipe3_img = cv.imread('refer/pipe_3.png', cv.IMREAD_ANYCOLOR)
         downPipes = self.detect(pipe3_img, frame, 0.8, (255, 0, 0))
 
@@ -82,14 +83,13 @@ class ComputerVision:
         birdLoc = self.detectBird(bird1_img, frame, 0.55, (0, 0, 255), bird2_img)
 
         if birdLoc and upPipes:
+            self.V = birdLoc[0][1] - self.Y
             if upPipes[0][0] < birdLoc[0][0]:
                 self.X = upPipes[0][1] - birdLoc[0][0]
                 self.Y = birdLoc[0][0] - upPipes[0][1]
-                self.V = (upPipes[0][1] - birdLoc[0][0]) / (time() - loop_time)
             else:
                 self.X = upPipes[0][0] - birdLoc[0][0]
                 self.Y = birdLoc[0][0] - upPipes[0][0]
-                self.V = (upPipes[0][0] - birdLoc[0][0]) / (time() - loop_time)
         
         if upPipes and len(upPipes[0]) > 2:
             self.Y1 = upPipes[0][1] - upPipes[0][0]
@@ -98,7 +98,7 @@ class ComputerVision:
 
         # debug the loop rate
         #print('FPS {}'.format(1 / (time() - loop_time)))
-        loop_time = time()
+        #loop_time = time()
 
         return True
 
