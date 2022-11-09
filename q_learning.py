@@ -1,9 +1,7 @@
 from cv import ComputerVision
 import json
-from sys import exit
 from pygame.locals import *
 import matplotlib.pyplot as plt
-import numpy as np
 
 
 def main():
@@ -73,8 +71,7 @@ class QLearning:
         if self.q_values.get(state) is None:
             # q_values[state][0] (action = 0)
             # q_values[state][1] (action = 1)
-            # q_values[state][2] (number of times)
-            self.q_values[state] = [0, 0, 0]     
+            self.q_values[state] = [0, 0]     
 
     def load_training_states(self):
         """Load current training state from json file."""
@@ -129,7 +126,6 @@ class QLearning:
         for move in history:
             t += 1
             state, action, new_state = move
-            self.q_values[state][2] += 1  # number of times this state has been seen
             curr_reward = self.reward[0]
             # Select reward
             if t <= 2:
