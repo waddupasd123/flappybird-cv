@@ -50,4 +50,4 @@ References
 
 2. OpenCV tutorials and code used from [here](https://learncodebygaming.com/blog/tutorial/opencv-object-detection-in-games)
 
-3. Q-learning model code for Flappy Bird extracted from [here](https://github.com/anthonyli358/FlapPyBird-Reinforcement-Learning)
+3. Q-learning model and code for Flappy Bird from [here](https://towardsdatascience.com/reinforcement-learning-in-python-with-flappy-bird-37eb01a4e786)

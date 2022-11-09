@@ -13,10 +13,11 @@ class ComputerVision:
         self.movementInfo = None
         self.gameInfo = None
         self.wincap = None
-        self.X = 0
-        self.Y = 0
-        self.V = 0
-        self.Y1 = 0
+        self.X = 0          # x-distance to next pipe
+        self.Y = 0          # y-distance to next pipe
+        self.lastY = 236    # last y-coordinate of the bird
+        self.V = 0          # velocity of bird
+        self.Y1 = 0         # y-distance between two pipes
 
     def getX(self):
         return self.X
@@ -55,6 +56,11 @@ class ComputerVision:
         if (crash):
             score = self.gameInfo['score']
             self.setup()
+            self.X = 0      
+            self.Y = 0          
+            self.lastY = 236    
+            self.V = 0          
+            self.Y1 = 0  
             return True, score
 
 
@@ -83,17 +89,29 @@ class ComputerVision:
         bird2_img = cv.imread('refer/bird_1.png', cv.IMREAD_ANYCOLOR)
         birdLoc = self.detectBird(bird1_img, frame, 0.55, (0, 0, 255), bird2_img)
 
+        if birdLoc:
+            self.V = -(birdLoc[0][1] - self.lastY)
+            self.lastY = birdLoc[0][1]
+            self.X = 0
+            self.Y = 0
+        else:
+            # Bird out of screen
+            self.V = 0
+            self.lastY = 0 
+            # Impossible values   
+            self.X = -1
+            self.Y = 9999
+
         if birdLoc and upPipes:
-            self.V = birdLoc[0][1] - self.Y
             if upPipes[0][0] < birdLoc[0][0]:
                 self.X = upPipes[0][1] - birdLoc[0][0]
                 self.Y = birdLoc[0][0] - upPipes[0][1]
             else:
                 self.X = upPipes[0][0] - birdLoc[0][0]
                 self.Y = birdLoc[0][0] - upPipes[0][0]
-        
-        if upPipes and len(upPipes[0]) > 2:
-            self.Y1 = upPipes[0][1] - upPipes[0][0]
+
+        if upPipes and len(upPipes) > 1:
+            self.Y1 = upPipes[0][1] - upPipes[1][1]
 
         cv.imshow('result.jpg', frame)
 

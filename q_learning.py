@@ -7,26 +7,33 @@ import numpy as np
 
 
 def main():
-    qlearn = AQLearning()
+    qlearn = QLearning()
     vision = ComputerVision()
     vision.setup()
 
     while True:
+        death, score =  vision.nextFrame()
+        if death:
+            print(f"Episode: {qlearn.episode}, alpha: {qlearn.alpha}, score: {score}, max_score: {qlearn.max_score}")
+            qlearn.update_qvalues(score)
+            if qlearn.episode % 100 == 0:
+                qlearn.save_qvalues()
+                qlearn.save_training_states()
+            qlearn.showPerformance()
+
+        #action = qlearn.act(vision.getX(), vision.getY(), vision.getV(), vision.getY1())
+        #quit = not vision.action(action)
         quit = not vision.action(qlearn.act(vision.getX(), vision.getY(), vision.getV(), vision.getY1()))
+        #print("STATE: " + qlearn.get_state(vision.getX(), vision.getY(), vision.getV(), vision.getY1()) + " ACTION: " + str(action))
         if quit:
             qlearn.save_qvalues()
             qlearn.save_training_states()
             break
 
-        death, score =  vision.nextFrame()
-        if death:
-            qlearn.update_qvalues(score)
-            #print(f"Episode: {qlearn.episode}, alpha: {qlearn.alpha}, score: {score}, max_score: {qlearn.max_score}")
-            qlearn.showPerformance()
-
+    plt.savefig('training_results.png')
 
         
-class AQLearning:
+class QLearning:
     def __init__(self):
         # Important values
         self.alpha = 0.7
@@ -79,7 +86,7 @@ class AQLearning:
                 self.episode = training_state['episodes'][-1]
                 self.scores = training_state['scores']
                 self.max_scores = training_state['max_scores']
-                self.alpha = max(self.alpha - self.alpha * self.episode, 0.1)
+                self.alpha = max(self.alpha - self.alpha_decay * self.episode, 0.1)
                 # self.epsilon = max(self.epsilon - self.epsilon_decay * self.episode, 0)
                 if self.scores:
                     self.max_score = self.max_scores[-1]
@@ -142,7 +149,7 @@ class AQLearning:
 
         # Decay values for convergence
         if self.alpha > 0.1:
-            self.alpha = max(self.alpha_decay - self.alpha_decay, 0.1)
+            self.alpha = max(self.alpha - self.alpha_decay, 0.1)
         # if self.epsilon > 0:
         #     self.epsilon = max(self.epsilon - self.epsilon_decay, 0)
 
@@ -150,7 +157,7 @@ class AQLearning:
         # Although wikipedia mentions a reset of initial conditions tends to predict human behaviour more accurately
         self.moves = []  # clear history after updating strategies
 
-        if score > max(self.scores, default=0):
+        if score > self.max_score:
             print("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             print("$$$$$$$$ NEW RECORD: %d $$$$$$$$" % score)
             print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n")
@@ -198,17 +205,17 @@ class AQLearning:
             sum_s += s
             average.append(sum_s/num)
         
-        if len(average) == 0:
-            average.append(0)
+        #if len(average) == 0:
+        #    average.append(0)
 
-        print("\nEpisode: {}, highest score: {}, average: {}".format(self.episode, max(self.scores, default=0), average[-1]))
+        print("\nEpisode: {}, highest score: {}, average: {}".format(self.episode, self.max_score, average[-1]))
         plt.figure(1)
         #plt.gca().get_xaxis().set_major_formatter(MaxNLocator(integer=True))
-        plt.scatter(range(1, num+1), self.scores, c="green", s=3)
-        plt.plot(range(1, num+1), average, 'b')
+        plt.scatter(range(1, num+1), self.scores, c="b", s=3)
+        plt.plot(range(1, num+1), average, 'orange')
         plt.plot(range(1, num+1), self.max_scores, label='max_score', color='g')
         plt.xlim((1,num))
-        plt.ylim((0,int(max(self.scores)*1.1)))
+        plt.ylim((0,self.max_score + 1))
 
         plt.title("Score distribution")
         plt.xlabel("Episode")
